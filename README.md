@@ -14,10 +14,10 @@ A portfolio-ready internal file sharing application that demonstrates DLP-inspir
 - Tests: pytest for policy/scanner/upload validation
 
 ## Screenshot Placeholders
-- Login view: `docs/screenshots/user/admin-login-portal.png`
-- Dashboard: `docs/screenshots/my-files.png`
-- File details: `docs/screenshots/recent-activity.png`
-- Admin panel: `docs/screenshots/admin-view.png`
+- ![Login view:](docs/screenshots/user/admin-login-portal.png)
+- ![Dashboard:](docs/screenshots/my-files.png)
+- ![File details:](docs/screenshots/recent-activity.png)
+- ![Admin panel:](docs/screenshots/admin-view.png)
 
 ## Repository Layout
 ```text
