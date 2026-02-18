@@ -13,6 +13,12 @@ A portfolio-ready internal file sharing application that demonstrates DLP-inspir
 - Storage: local filesystem for file blobs, DB metadata in SQLite
 - Tests: pytest for policy/scanner/upload validation
 
+## Screenshot Placeholders
+- Login view: `docs/screenshots/user/admin-login-portal.png`
+- Dashboard: `docs/screenshots/my-files.png`
+- File details: `docs/screenshots/recent-activity.png`
+- Admin panel: `docs/screenshots/admin-view.png`
+
 ## Repository Layout
 ```text
 /backend     FastAPI app (routers, models, scanner, policy engine, tests)
@@ -76,12 +82,6 @@ Covered tests:
 
 ## Architecture Diagram
 See `/docs/architecture.md` for the full component breakdown and ASCII diagram.
-
-## Screenshot Placeholders
-- Login view: `docs/screenshots/login.png`
-- Dashboard: `docs/screenshots/dashboard.png`
-- File details: `docs/screenshots/file-details.png`
-- Admin panel: `docs/screenshots/admin-panel.png`
 
 ## Troubleshooting
 - `curl http://localhost:8000/health` cannot connect:
