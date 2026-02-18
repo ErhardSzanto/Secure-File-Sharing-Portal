@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend: bootstrap",
+      "type": "shell",
+      "command": "${workspaceFolder}/backend/scripts/bootstrap.sh",
+      "problemMatcher": []
+    },
+    {
+      "label": "backend: run",
+      "type": "shell",
+      "command": "${workspaceFolder}/backend/scripts/dev.sh",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "backend: test",
+      "type": "shell",
+      "command": "${workspaceFolder}/backend/scripts/test.sh",
+      "problemMatcher": []
+    }
+  ]
+}

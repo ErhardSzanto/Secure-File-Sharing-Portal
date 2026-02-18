@@ -1,0 +1,5 @@
+Customer support excerpt:
+- Contact: demo.customer@example.org
+- Phone: +1 555-234-7788
+- Card on file (test only): 4111 1111 1111 1111
+- Reference ID: ID-ABCD1234

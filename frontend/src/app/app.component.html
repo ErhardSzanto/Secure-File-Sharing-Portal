@@ -1,0 +1,171 @@
+<main class="shell">
+  <section *ngIf="!me" class="login-card">
+    <h1>Secure File Sharing Portal</h1>
+    <p>Internal document protection and sharing</p>
+
+    <label>Email</label>
+    <input [(ngModel)]="email" type="email" />
+
+    <label>Password</label>
+    <input [(ngModel)]="password" type="password" />
+
+    <button (click)="login()">Login</button>
+
+    <p class="hint">Demo users: admin@portal.local / Admin123! and user@portal.local / User123!</p>
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </section>
+
+  <section *ngIf="me" class="app-grid">
+    <header class="app-header">
+      <div>
+        <h1>Secure File Sharing Portal</h1>
+        <p>{{ me.email }} ({{ me.role }})</p>
+      </div>
+      <button class="secondary" (click)="logout()">Logout</button>
+    </header>
+
+    <nav class="tabs">
+      <button [class.active]="activeTab === 'my'" (click)="setTab('my')">My Files</button>
+      <button [class.active]="activeTab === 'shared'" (click)="setTab('shared')">Shared With Me</button>
+      <button [class.active]="activeTab === 'activity'" (click)="setTab('activity')">Recent Activity</button>
+      <button *ngIf="me.role === 'Admin'" [class.active]="activeTab === 'admin'" (click)="setTab('admin')">Admin</button>
+    </nav>
+
+    <section class="content">
+      <aside class="left-pane">
+        <div *ngIf="activeTab === 'my'" class="upload-box"
+             [class.drag-over]="uploadDragOver"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)">
+          <p>Drag and drop a TXT/CSV/PDF file here</p>
+          <input type="file" (change)="onFileInputChange($event)" />
+          <p class="hint">{{ uploadStatus }}</p>
+          <div *ngIf="lastUploadResult">
+            <p><strong>Assigned Label:</strong> {{ lastUploadResult.label }}</p>
+            <p><strong>Policy Decision:</strong> {{ lastUploadResult.policy_decision }} - {{ lastUploadResult.decision_reason }}</p>
+            <pre>{{ formatJson(lastUploadResult.scan_summary_json) }}</pre>
+          </div>
+        </div>
+
+        <div *ngIf="activeTab === 'my'">
+          <h3>My Files</h3>
+          <button class="file-item" *ngFor="let file of myFiles" (click)="selectFile(file.id)">
+            <span>{{ file.filename }}</span>
+            <span class="label" [class]="'label ' + labelClass(file.label)">{{ file.label }}</span>
+          </button>
+        </div>
+
+        <div *ngIf="activeTab === 'shared'">
+          <h3>Shared With Me</h3>
+          <button class="file-item" *ngFor="let file of sharedFiles" (click)="selectFile(file.id)">
+            <span>{{ file.filename }}</span>
+            <span class="label" [class]="'label ' + labelClass(file.label)">{{ file.label }}</span>
+          </button>
+        </div>
+
+        <div *ngIf="activeTab === 'activity'">
+          <h3>Recent Activity</h3>
+          <div class="activity-row" *ngFor="let row of recentActivity">
+            <div>{{ row.action }}</div>
+            <small>{{ row.timestamp | date:'short' }}</small>
+          </div>
+        </div>
+
+        <div *ngIf="activeTab === 'admin' && me.role === 'Admin'">
+          <h3>All Files</h3>
+          <button class="file-item" *ngFor="let file of adminFiles" (click)="selectFile(file.id)">
+            <span>#{{ file.id }} {{ file.filename }}</span>
+            <span class="label" [class]="'label ' + labelClass(file.label)">{{ file.label }}</span>
+          </button>
+        </div>
+      </aside>
+
+      <article class="detail-pane">
+        <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+        <ng-container *ngIf="selectedFile; else emptyState">
+          <h2>{{ selectedFile.filename }}</h2>
+          <div class="meta-grid">
+            <div><strong>Label:</strong> <span class="label" [class]="'label ' + labelClass(selectedFile.label)">{{ selectedFile.label }}</span></div>
+            <div><strong>Content Type:</strong> {{ selectedFile.content_type }}</div>
+            <div><strong>Size:</strong> {{ selectedFile.size }} bytes</div>
+            <div><strong>Uploaded:</strong> {{ selectedFile.created_at | date:'medium' }}</div>
+          </div>
+
+          <h3>Scan Summary</h3>
+          <pre>{{ formatJson(selectedFile.scan_summary_json) }}</pre>
+
+          <h3>Policy Decision</h3>
+          <p><strong>{{ selectedFile.policy_decision | uppercase }}</strong> - {{ selectedFile.decision_reason }}</p>
+
+          <section>
+            <h3>Internal Sharing</h3>
+            <div class="row">
+              <input placeholder="user email" [(ngModel)]="shareEmail" />
+              <button (click)="addInternalShare()">Add Share</button>
+            </div>
+            <div class="activity-row" *ngFor="let share of selectedFile.internal_shares">
+              <div>{{ share.email }}</div>
+              <small>{{ share.permission }}</small>
+            </div>
+          </section>
+
+          <section>
+            <h3>External Link</h3>
+            <div class="row">
+              <input type="datetime-local" [(ngModel)]="linkExpiry" />
+              <input placeholder="justification (required for warn)" [(ngModel)]="linkJustification" />
+              <button (click)="createExternalLink()">Create Link</button>
+            </div>
+            <div class="activity-row" *ngFor="let link of selectedFile.external_links">
+              <div>{{ link.token }}</div>
+              <small>{{ link.status }} until {{ link.expires_at | date:'short' }}</small>
+            </div>
+          </section>
+
+          <section>
+            <h3>Audit Timeline</h3>
+            <div class="activity-row" *ngFor="let row of selectedFileAudit">
+              <div>{{ row.action }}</div>
+              <small>{{ row.timestamp | date:'short' }}</small>
+            </div>
+          </section>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <p>Select a file to see details, scan summary, policy status, sharing actions, and audit history.</p>
+        </ng-template>
+
+        <section *ngIf="activeTab === 'admin' && me.role === 'Admin'" class="admin-panel">
+          <h2>Admin Controls</h2>
+
+          <h3>Label Override</h3>
+          <div class="row">
+            <input type="number" placeholder="file id" [(ngModel)]="overrideFileId" />
+            <select [(ngModel)]="overrideLabel">
+              <option>Public</option>
+              <option>Internal</option>
+              <option>Confidential</option>
+              <option>Highly Confidential</option>
+            </select>
+            <input placeholder="justification" [(ngModel)]="overrideJustification" />
+            <button (click)="runLabelOverride()">Apply Override</button>
+          </div>
+
+          <h3>Policy Rules Summary</h3>
+          <div class="activity-row" *ngFor="let rule of policyRules">
+            <div>{{ rule.label }} / {{ rule.action }}</div>
+            <small>{{ rule.decision }}: {{ rule.reason }}</small>
+          </div>
+
+          <h3>Audit Log</h3>
+          <div class="activity-row" *ngFor="let row of adminAudit">
+            <div>{{ row.action }} ({{ row.target_type }}:{{ row.target_id }})</div>
+            <small>{{ row.timestamp | date:'short' }}</small>
+          </div>
+        </section>
+      </article>
+    </section>
+  </section>
+</main>
